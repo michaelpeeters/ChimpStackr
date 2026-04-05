@@ -53,7 +53,7 @@ jobs:
 
           # Generate flatpak sources (prefers binary wheels, works with all packages)
           req2flatpak --requirements-file /tmp/requirements.txt \
-            --target-platforms 312-x86_64-linux \
+            --target-platforms 3.12-x86_64 \
             --outfile packaging/flatpak/python-deps.json
 
           echo "Generated $(wc -l < packaging/flatpak/python-deps.json) lines of pip sources"
