@@ -84,7 +84,8 @@ jobs:
             - --socket=fallback-x11
             - --socket=wayland
             - --device=dri
-            - --filesystem=home
+            - --filesystem=xdg-pictures:ro
+            - --filesystem=xdg-download:rw
 
           cleanup-commands:
             - /app/cleanup-BaseApp.sh
@@ -196,10 +197,9 @@ jobs:
           cp packaging/flatpak/io.github.noah_peeters.ChimpStackr.desktop packaging/flatpak/flathub/
           cp packaging/flatpak/io.github.noah_peeters.ChimpStackr.metainfo.xml packaging/flatpak/flathub/
 
-          # Create flathub.json for auto-merge
+          # Create flathub.json config
           cat > packaging/flatpak/flathub/flathub.json << 'EOF'
           {
-            "automerge-flathubbot-prs": true,
             "require-important-update": false
           }
           EOF
