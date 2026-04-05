@@ -1,0 +1,32 @@
+version: 2
+updates:
+  # Keep GitHub Actions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+
+  # Keep Python dependencies up to date
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps"
+    # Only open PRs for security updates and minor/patch bumps
+    open-pull-requests-limit: 10
+    # Group minor/patch updates together to reduce PR noise
+    groups:
+      python-minor:
+        update-types:
+          - "minor"
+          - "patch"
