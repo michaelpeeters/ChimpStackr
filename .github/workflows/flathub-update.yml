@@ -69,6 +69,7 @@ jobs:
           COMMIT=$(git rev-parse HEAD)
           DATE=$(date -u +%Y-%m-%d)
 
+          mkdir -p packaging/flatpak/flathub
           cat > packaging/flatpak/flathub/io.github.noah_peeters.ChimpStackr.yml << MANIFEST
           app-id: io.github.noah_peeters.ChimpStackr
           runtime: org.kde.Platform
