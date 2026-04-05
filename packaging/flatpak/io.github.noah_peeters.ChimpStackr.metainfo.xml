@@ -48,6 +48,17 @@
     <color type="primary" scheme_preference="dark">#33691e</color>
   </branding>
 
+  <screenshots>
+    <screenshot type="default">
+      <caption>Focus stacked macro image with source images panel</caption>
+      <image>https://raw.githubusercontent.com/noah-peeters/ChimpStackr/master/docs/screenshots/main.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Processing a focus stack with progress indicator</caption>
+      <image>https://raw.githubusercontent.com/noah-peeters/ChimpStackr/master/docs/screenshots/processing.png</image>
+    </screenshot>
+  </screenshots>
+
   <releases>
     <release version="0.2.1" date="2026-04-05">
       <description>
