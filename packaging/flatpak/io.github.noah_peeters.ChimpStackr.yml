@@ -1,0 +1,129 @@
+app-id: io.github.noah_peeters.ChimpStackr
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+base: io.qt.PySide.BaseApp
+base-version: '6.9'
+command: chimpstackr
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=home
+
+cleanup-commands:
+  - /app/cleanup-BaseApp.sh
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /lib/cmake
+  - /share/man
+  - '*.a'
+  - '*.la'
+
+modules:
+  # FFTW3 single-precision (required by pyFFTW)
+  - name: fftw3-float
+    buildsystem: autotools
+    config-opts:
+      - --enable-shared
+      - --disable-static
+      - --enable-threads
+      - --enable-float
+    sources:
+      - type: archive
+        url: https://www.fftw.org/fftw-3.3.10.tar.gz
+        sha256: 56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467
+
+  # FFTW3 double-precision (pyFFTW needs both float and double)
+  - name: fftw3-double
+    buildsystem: autotools
+    config-opts:
+      - --enable-shared
+      - --disable-static
+      - --enable-threads
+    sources:
+      - type: archive
+        url: https://www.fftw.org/fftw-3.3.10.tar.gz
+        sha256: 56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467
+
+  # LibRaw (required by rawpy)
+  - name: libraw
+    buildsystem: autotools
+    config-opts:
+      - --disable-static
+      - --enable-shared
+    sources:
+      - type: archive
+        url: https://www.libraw.org/data/LibRaw-0.21.3.tar.gz
+        sha256: 9d111c159ecc6cb4a8d98a3a7c3145bc0be3f125f534caa3e72be1e3e71f722f
+    cleanup:
+      - /bin
+      - /share/doc
+
+  # Python dependencies + ChimpStackr
+  - name: chimpstackr
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      # Install Python dependencies (PySide6 comes from BaseApp, skip it)
+      - >-
+        pip3 install --no-cache-dir --prefix=/app --no-build-isolation
+        opencv-python-headless numpy numba rawpy imageio scipy pyfftw
+
+      # Install ChimpStackr source with auto-detected Python version
+      - |
+        PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        SITE="/app/lib/python${PYVER}/site-packages"
+        mkdir -p "${SITE}/src"
+        cp -r src/* "${SITE}/src/"
+        mkdir -p "${SITE}/packaging"
+        cp -r packaging/icons "${SITE}/packaging/"
+
+      # Create GUI entry point
+      - |
+        PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        mkdir -p /app/bin
+        cat > /app/bin/chimpstackr << EOF
+        #!/usr/bin/env python3
+        import sys
+        sys.path.insert(0, "/app/lib/python${PYVER}/site-packages")
+        from src.run import main
+        main()
+        EOF
+        chmod +x /app/bin/chimpstackr
+
+      # Create CLI entry point
+      - |
+        PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        cat > /app/bin/chimpstackr-cli << EOF
+        #!/usr/bin/env python3
+        import sys
+        sys.path.insert(0, "/app/lib/python${PYVER}/site-packages")
+        from src.cli import main
+        main()
+        EOF
+        chmod +x /app/bin/chimpstackr-cli
+
+      # Install desktop entry and metadata
+      - install -Dm644 packaging/flatpak/io.github.noah_peeters.ChimpStackr.desktop
+          /app/share/applications/io.github.noah_peeters.ChimpStackr.desktop
+      - install -Dm644 packaging/flatpak/io.github.noah_peeters.ChimpStackr.metainfo.xml
+          /app/share/metainfo/io.github.noah_peeters.ChimpStackr.metainfo.xml
+
+      # Install icons
+      - install -Dm644 packaging/icons/icon_128x128.png
+          /app/share/icons/hicolor/128x128/apps/io.github.noah_peeters.ChimpStackr.png
+      - install -Dm644 packaging/icons/icon_256x256.png
+          /app/share/icons/hicolor/256x256/apps/io.github.noah_peeters.ChimpStackr.png
+      - install -Dm644 packaging/icons/icon_512x512.png
+          /app/share/icons/hicolor/512x512/apps/io.github.noah_peeters.ChimpStackr.png
+
+    sources:
+      - type: dir
+        path: ../../
